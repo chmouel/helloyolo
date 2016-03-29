@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"flag"
 	"html"
 	"io"
 	"io/ioutil"
@@ -98,9 +99,19 @@ func loadNextFromFile(url string) (nextLink string) {
 }
 
 func main() {
-	url := "http://www.hellocomic.com/batmat-vs-superman-the-greatest-battles-2015/c1/p150"
-	var next string
-	next = loadNextFromFile(url)
+	flag.Parse()
+
+	if len(flag.Args()) == 0 {
+		log.Fatal("Usage: comics-download hello-comics-url")
+	}
+
+	url := flag.Args()[0]
+
+	if strings.HasPrefix(url, "http://www.hellocomic.com/") == false {
+		log.Fatal("Only hellocomics url for now is supported")
+	}
+
+	var next = loadNextFromFile(url)
 	for {
 		if strings.HasPrefix(next, "http://www.hellocomic.com/comic/view?slug=") || next == "" {
 			log.Println("Finished")
