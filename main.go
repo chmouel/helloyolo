@@ -15,21 +15,6 @@ import (
 
 const downloadDir string = "/tmp"
 
-// getUrl ...
-func getUrl(url string) (body []byte) {
-	resp, err := http.Get(url)
-	if err != nil {
-		panic("cannot")
-	}
-	defer resp.Body.Close()
-	body, err = ioutil.ReadAll(resp.Body)
-	if err != nil {
-		panic("cannot")
-	}
-	return
-}
-
-// wget ...
 func wget(url string, dest string) {
 	response, e := http.Get(url)
 	if e != nil {
