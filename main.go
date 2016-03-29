@@ -43,6 +43,7 @@ func wget(url string, dest string) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	fmt.Printf("Getting %s\n", url)
 	_, err = io.Copy(file, response.Body)
 	if err != nil {
 		log.Fatal(err)
@@ -50,7 +51,7 @@ func wget(url string, dest string) {
 	file.Close()
 }
 
-func loadFile() {
+func loadNextFromFile(temporaryFile string) (nextLink string) {
 	rimg, err := regexp.Compile("a href.*img src=\"(.*.jpg)\".*div")
 	if err != nil {
 		log.Fatal(err)
@@ -59,7 +60,7 @@ func loadFile() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	inFile, err := os.Open("/tmp/a.html")
+	inFile, err := os.Open(temporaryFile)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -68,11 +69,11 @@ func loadFile() {
 	for scanner.Scan() {
 		nextMatch := rnext.FindStringSubmatch(scanner.Text())
 		if len(nextMatch) != 0 {
-			fmt.Println(nextMatch[1])
+			nextLink = nextMatch[1]
 		}
 
 		matches := rimg.FindStringSubmatch(scanner.Text())
-		if len(matches) == 10000 {
+		if len(matches) != 0 {
 			img := html.UnescapeString(matches[1])
 			comicname := strings.Split(img, "/")[5]
 			dirimg := downloadDir + "/" + comicname + "/" + strings.Split(img, "/")[6]
@@ -82,8 +83,10 @@ func loadFile() {
 			fmt.Println(fullimage)
 		}
 	}
+	return
 }
 
 func main() {
-	loadFile()
+	next := loadNextFromFile("/tmp/a.html")
+	fmt.Println(next)
 }
