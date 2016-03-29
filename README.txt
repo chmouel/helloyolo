@@ -1,3 +1,5 @@
-Download comics
+Download comics from hello-comics
 
-Only hello-comics works for now, simply provide the URL and it will download it ot /tmp you can then zip the or rar them the way you like to generate cbr cbz
+You just provide a URL and it will download them and generate zip files sorted in ~/Documents/Comics/comic-name/comic-episode.cbz
+
+Future feature would hopefully include tracking and update

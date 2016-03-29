@@ -1,4 +1,4 @@
-BINARY=comics-download
+BINARY=helloyolo
 
 all:
 	@mkdir -p output

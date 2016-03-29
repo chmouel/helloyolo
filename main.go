@@ -168,7 +168,7 @@ func main() {
 
 	flag.Parse()
 	if len(flag.Args()) == 0 {
-		log.Fatal("Usage: comics-download hello-comics-url")
+		log.Fatal("Usage: helloyolo hello-comics-url")
 	}
 
 	url := flag.Args()[0]
