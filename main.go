@@ -2,7 +2,6 @@ package main
 
 import (
 	"bufio"
-	"fmt"
 	"html"
 	"io"
 	"io/ioutil"
@@ -43,7 +42,7 @@ func wget(url string, dest string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf("Getting %s\n", url)
+	log.Printf("Getting %s to %s\n", url, dest)
 	_, err = io.Copy(file, response.Body)
 	if err != nil {
 		log.Fatal(err)
@@ -51,7 +50,16 @@ func wget(url string, dest string) {
 	file.Close()
 }
 
-func loadNextFromFile(temporaryFile string) (nextLink string) {
+func loadNextFromFile(url string) (nextLink string) {
+
+	tmpfile, err := ioutil.TempFile("", ".xxxxxxx-download-comics")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer os.Remove(tmpfile.Name()) // clean up
+
+	wget(url, tmpfile.Name())
+
 	rimg, err := regexp.Compile("a href.*img src=\"(.*.jpg)\".*div")
 	if err != nil {
 		log.Fatal(err)
@@ -60,7 +68,7 @@ func loadNextFromFile(temporaryFile string) (nextLink string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	inFile, err := os.Open(temporaryFile)
+	inFile, err := os.Open(tmpfile.Name())
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -79,14 +87,25 @@ func loadNextFromFile(temporaryFile string) (nextLink string) {
 			dirimg := downloadDir + "/" + comicname + "/" + strings.Split(img, "/")[6]
 			fullimage := dirimg + "/" + strings.Split(img, "/")[7]
 			os.MkdirAll(dirimg, 0755)
-			wget(img, fullimage)
-			fmt.Println(fullimage)
+			if _, err := os.Stat(fullimage); err == nil {
+				log.Printf("Skiping %s\n", fullimage)
+			} else {
+				wget(img, fullimage)
+			}
 		}
 	}
 	return
 }
 
 func main() {
-	next := loadNextFromFile("/tmp/a.html")
-	fmt.Println(next)
+	url := "http://www.hellocomic.com/batmat-vs-superman-the-greatest-battles-2015/c1/p150"
+	var next string
+	next = loadNextFromFile(url)
+	for {
+		if strings.HasPrefix(next, "http://www.hellocomic.com/comic/view?slug=") || next == "" {
+			log.Println("Finished")
+			break
+		}
+		next = loadNextFromFile(next)
+	}
 }
