@@ -8,4 +8,10 @@ Future feature would hopefully will include tracking and updating
 INSTALL
 -------
 
-You just do a make and you take the binary in the output/ directory
+Just do a :
+
+$ go get -u github.com/chmouel/helloyolo
+
+and the binary should go to GOPATH/bin, just rerun it to get it updated.
+
+you can as well just use the Makefile which would output to _output/ directory
