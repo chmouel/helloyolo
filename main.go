@@ -164,11 +164,14 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	comicsDir := filepath.Join(user.HomeDir, "/Documents/Comics")
+	defaultComicsDir := filepath.Join(user.HomeDir, "/Documents/Comics")
+	comicsDir := flag.String("comicdir", defaultComicsDir, "Comics download dir.")
 
 	flag.Parse()
 	if len(flag.Args()) == 0 {
-		log.Fatal("Usage: helloyolo hello-comics-url")
+		fmt.Println("Usage: helloyolo hello-comics-url")
+		flag.PrintDefaults()
+		os.Exit(2)
 	}
 
 	url := flag.Args()[0]
@@ -181,10 +184,10 @@ func main() {
 	for {
 		next, comicname, episode = loadNextFromFile(next)
 		if episode != previousEpisode {
-			packitShipit(comicsDir, comicname, previousEpisode)
+			packitShipit(*comicsDir, comicname, previousEpisode)
 		}
 		if strings.HasPrefix(next, "http://www.hellocomic.com/comic/view?slug=") || next == "" {
-			packitShipit(comicsDir, comicname, episode)
+			packitShipit(*comicsDir, comicname, episode)
 			log.Println("Finished")
 			break
 		}
