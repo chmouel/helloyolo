@@ -18,6 +18,7 @@ import (
 
 var (
 	comicsDir string
+	testMode  bool
 )
 
 func wget(url, dest string) {
@@ -50,6 +51,7 @@ func loadNextFromFile(url string) (nextLink, comicname, episode string) {
 	inFile, err := os.Open(tmpfile.Name())
 	checkError(err)
 	defer inFile.Close()
+
 	scanner := bufio.NewScanner(inFile)
 	for scanner.Scan() {
 		nextMatch := rnext.FindStringSubmatch(scanner.Text())
@@ -67,7 +69,9 @@ func loadNextFromFile(url string) (nextLink, comicname, episode string) {
 			os.MkdirAll(dirimg, 0755)
 			if _, err := os.Stat(fullimage); os.IsNotExist(err) {
 				log.Printf("IMG: %s\n", img)
-				wget(img, fullimage)
+				if testMode == false {
+					wget(img, fullimage)
+				}
 			}
 		}
 	}
@@ -95,15 +99,25 @@ func loop(url string) {
 func main() {
 	user, err := user.Current()
 	checkError(err)
-	comicsDir = *flag.String("comicdir",
-		filepath.Join(user.HomeDir, "/Documents/Comics"),
-		"Comics download dir.")
+	parsed_comicDir := flag.String("comicdir", filepath.Join(user.HomeDir, "/Documents/Comics"), "Comics download dir.")
+	parsed_testMode := flag.Bool("test", false, "Run in a test mode")
+
+	flag.Usage = func() {
+		fmt.Printf("Usage: helloyolo [options] hello-comics-url\n\n")
+		flag.PrintDefaults()
+	}
 
 	flag.Parse()
+
 	if len(flag.Args()) == 0 {
-		fmt.Println("Usage: helloyolo hello-comics-url")
-		flag.PrintDefaults()
+		flag.Usage()
 		os.Exit(2)
+	}
+
+	comicsDir = *parsed_comicDir
+	testMode = *parsed_testMode
+	if testMode {
+		log.Println("RUNNING IN TEST MODE")
 	}
 
 	url := flag.Args()[0]
