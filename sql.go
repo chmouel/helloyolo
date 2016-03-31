@@ -24,7 +24,6 @@ func DBupdate(episode string, latest int) {
 	}
 	defer db.Close()
 
-	fmt.Println("blah")
 	stmt, err := db.Prepare(sqlTable)
 	if err != nil {
 		log.Fatal(err)
