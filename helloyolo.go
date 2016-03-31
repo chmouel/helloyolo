@@ -19,47 +19,34 @@ import (
 const downloadDir string = "/tmp"
 
 func wget(url, dest string) {
-	response, e := http.Get(url)
-	if e != nil {
-		log.Fatal(e)
-	}
+	response, err := http.Get(url)
+	checkError(err)
 
 	defer response.Body.Close()
 
 	//open a file for writing
 	file, err := os.Create(dest)
-	if err != nil {
-		log.Fatal(err)
-	}
+	checkError(err)
+
 	_, err = io.Copy(file, response.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
+	checkError(err)
 	file.Close()
 }
 
 func loadNextFromFile(url string) (nextLink, comicname, episode string) {
 
 	tmpfile, err := ioutil.TempFile("", ".xxxxxxx-download-comics")
-	if err != nil {
-		log.Fatal(err)
-	}
+	checkError(err)
 	defer os.Remove(tmpfile.Name()) // clean up
 
 	wget(url, tmpfile.Name())
 
 	rimg, err := regexp.Compile("a href.*img src=\"(.*.jpg)\".*div")
-	if err != nil {
-		log.Fatal(err)
-	}
+	checkError(err)
 	rnext, err := regexp.Compile("a class=\"nextLink nextBtn\" href=\"([^\"]*)\"")
-	if err != nil {
-		log.Fatal(err)
-	}
+	checkError(err)
 	inFile, err := os.Open(tmpfile.Name())
-	if err != nil {
-		log.Fatal(err)
-	}
+	checkError(err)
 	defer inFile.Close()
 	scanner := bufio.NewScanner(inFile)
 	for scanner.Scan() {
@@ -76,9 +63,7 @@ func loadNextFromFile(url string) (nextLink, comicname, episode string) {
 			dirimg := filepath.Join(downloadDir, comicname, episode)
 			fullimage := filepath.Join(dirimg, strings.Split(img, "/")[7])
 			os.MkdirAll(dirimg, 0755)
-			if _, err := os.Stat(fullimage); err == nil {
-				//log.Printf("Skiping %s\n", fullimage)
-			} else {
+			if _, err := os.Stat(fullimage); os.IsNotExist(err) {
 				log.Printf("IMG: %s\n", img)
 				wget(img, fullimage)
 			}
@@ -89,9 +74,7 @@ func loadNextFromFile(url string) (nextLink, comicname, episode string) {
 
 func main() {
 	user, err := user.Current()
-	if err != nil {
-		log.Fatal(err)
-	}
+	checkError(err)
 	defaultComicsDir := filepath.Join(user.HomeDir, "/Documents/Comics")
 	comicsDir := flag.String("comicdir", defaultComicsDir, "Comics download dir.")
 

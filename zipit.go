@@ -15,10 +15,8 @@ func packitShipit(comicsDir, comicname, episode string) {
 	os.MkdirAll(cbzDir, 0755)
 	cbzFile := fmt.Sprintf("%s/%s.cbz", cbzDir, episode)
 	tmpDir := filepath.Join(downloadDir, comicname, episode)
-	if _, err := os.Stat(cbzFile); err != nil {
-		if os.IsNotExist(err) {
-			zipit(tmpDir, cbzFile)
-		}
+	if _, err := os.Stat(cbzFile); os.IsNotExist(err) {
+		zipit(tmpDir, cbzFile)
 	}
 	os.RemoveAll(tmpDir)
 	log.Printf("ZIP: %s\n", cbzFile)
@@ -35,9 +33,7 @@ func zipit(source, target string) error {
 	defer archive.Close()
 
 	info, err := os.Stat(source)
-	if err != nil {
-		log.Fatal(err)
-	}
+	checkError(err)
 
 	var baseDir string
 	if info.IsDir() {
@@ -45,14 +41,10 @@ func zipit(source, target string) error {
 	}
 
 	filepath.Walk(source, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			log.Fatal(err)
-		}
+		checkError(err)
 
 		header, err := zip.FileInfoHeader(info)
-		if err != nil {
-			log.Fatal(err)
-		}
+		checkError(err)
 
 		if baseDir != "" {
 			header.Name = strings.TrimPrefix(path, source)
@@ -65,14 +57,11 @@ func zipit(source, target string) error {
 		}
 
 		writer, err := archive.CreateHeader(header)
-		if err != nil {
-			log.Fatal(err)
-		}
+		checkError(err)
 
 		file, err := os.Open(path)
-		if err != nil {
-			log.Fatal(err)
-		}
+		checkError(err)
+
 		defer file.Close()
 		_, err = io.Copy(writer, file)
 		return err
