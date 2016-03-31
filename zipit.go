@@ -14,12 +14,15 @@ func packitShipit(comicsDir, comicname, episode string) {
 	cbzDir := filepath.Join(comicsDir, comicname)
 	os.MkdirAll(cbzDir, 0755)
 	cbzFile := fmt.Sprintf("%s/%s.cbz", cbzDir, episode)
-	tmpDir := filepath.Join(downloadDir, comicname, episode)
+	tmpDir := filepath.Join(os.TempDir(), comicname, episode)
 	if _, err := os.Stat(cbzFile); os.IsNotExist(err) {
 		zipit(tmpDir, cbzFile)
+		log.Printf("ZIP: %s\n", cbzFile)
+	} else {
+		log.Printf("ZIP: Skipping %s\n", cbzFile)
+
 	}
 	os.RemoveAll(tmpDir)
-	log.Printf("ZIP: %s\n", cbzFile)
 }
 
 func zipit(source, target string) error {

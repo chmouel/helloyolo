@@ -16,7 +16,9 @@ import (
 	"strings"
 )
 
-const downloadDir string = "/tmp"
+var (
+	comicsDir string
+)
 
 func wget(url, dest string) {
 	response, err := http.Get(url)
@@ -60,7 +62,7 @@ func loadNextFromFile(url string) (nextLink, comicname, episode string) {
 			img := html.UnescapeString(matches[1])
 			comicname = strings.Split(img, "/")[5]
 			episode = strings.Split(img, "/")[6]
-			dirimg := filepath.Join(downloadDir, comicname, episode)
+			dirimg := filepath.Join(os.TempDir(), comicname, episode)
 			fullimage := filepath.Join(dirimg, strings.Split(img, "/")[7])
 			os.MkdirAll(dirimg, 0755)
 			if _, err := os.Stat(fullimage); os.IsNotExist(err) {
@@ -72,11 +74,30 @@ func loadNextFromFile(url string) (nextLink, comicname, episode string) {
 	return
 }
 
+// loop ...
+func loop(url string) {
+	var next, comicname, episode = loadNextFromFile(url)
+	var previousEpisode = episode
+	for {
+		next, comicname, episode = loadNextFromFile(next)
+		if episode != previousEpisode {
+			packitShipit(comicsDir, comicname, previousEpisode)
+		}
+		if strings.HasPrefix(next, "http://www.hellocomic.com/comic/view?slug=") || next == "" {
+			packitShipit(comicsDir, comicname, episode)
+			log.Println("Finished")
+			break
+		}
+		previousEpisode = episode
+	}
+}
+
 func main() {
 	user, err := user.Current()
 	checkError(err)
-	defaultComicsDir := filepath.Join(user.HomeDir, "/Documents/Comics")
-	comicsDir := flag.String("comicdir", defaultComicsDir, "Comics download dir.")
+	comicsDir = *flag.String("comicdir",
+		filepath.Join(user.HomeDir, "/Documents/Comics"),
+		"Comics download dir.")
 
 	flag.Parse()
 	if len(flag.Args()) == 0 {
@@ -90,18 +111,5 @@ func main() {
 		log.Fatal("Only hellocomics url for now is supported")
 	}
 
-	var next, comicname, episode = loadNextFromFile(url)
-	var previousEpisode = episode
-	for {
-		next, comicname, episode = loadNextFromFile(next)
-		if episode != previousEpisode {
-			packitShipit(*comicsDir, comicname, previousEpisode)
-		}
-		if strings.HasPrefix(next, "http://www.hellocomic.com/comic/view?slug=") || next == "" {
-			packitShipit(*comicsDir, comicname, episode)
-			log.Println("Finished")
-			break
-		}
-		previousEpisode = episode
-	}
+	loop(url)
 }
