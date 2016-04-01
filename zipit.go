@@ -37,7 +37,7 @@ func packitShipit(comicsDir, comicname, episode string) {
 		log.Printf("ZIP: Skipping %s\n", cbzFile)
 
 	}
-	os.RemoveAll(tmpDir)
+	//os.RemoveAll(tmpDir)
 }
 
 func zipit(source, target string) error {
@@ -84,6 +84,5 @@ func zipit(source, target string) error {
 		_, err = io.Copy(writer, file)
 		return err
 	})
-
 	return err
 }
