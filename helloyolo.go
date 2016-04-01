@@ -70,7 +70,7 @@ func frComic(url string) (nextLink, comicname, episode string) {
 
 	rimg, _ := regexp.Compile("img class=\"open\" src=\"(.*.jpg)\"/>")
 	rnext, _ := regexp.Compile("a href=\"([^\"]*)\" onClick=.*nextPage.*")
-	repisode, _ := regexp.Compile("^<title>([^:]*)[ ]+::[ ]+Chapitre ([^:]*)[ ]+::.*")
+	repisode, _ := regexp.Compile("<h1 class=\"tbtitle dnone\"><a href=\"[^\"]*\" title=\"([^\"]*)\">.* :: ")
 
 	inFile, err := os.Open(tmpfile.Name())
 	checkError(err)
