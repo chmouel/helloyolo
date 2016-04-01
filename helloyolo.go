@@ -164,6 +164,9 @@ func main() {
 	}
 
 	comicsDir = *parsed_comicDir
+	if _, err := os.Stat(comicsDir); os.IsNotExist(err) {
+		os.MkdirAll(comicsDir, 755)
+	}
 	testMode = *parsed_testMode
 	if testMode {
 		log.Println("RUNNING IN TEST MODE")
