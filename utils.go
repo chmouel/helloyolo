@@ -1,10 +1,8 @@
 package main
 
 import (
-	"io"
 	"log"
-	"net/http"
-	"os"
+	"os/exec"
 )
 
 func checkError(err error) {
@@ -14,16 +12,9 @@ func checkError(err error) {
 }
 
 func wget(url, dest string) {
-	response, err := http.Get(url)
+	wgetExec, err := exec.LookPath("wget")
 	checkError(err)
 
-	defer response.Body.Close()
-
-	//open a file for writing
-	file, err := os.Create(dest)
+	_, err = exec.Command(wgetExec, "-c", "-O", dest, url).Output()
 	checkError(err)
-
-	_, err = io.Copy(file, response.Body)
-	checkError(err)
-	file.Close()
 }
