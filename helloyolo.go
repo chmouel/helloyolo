@@ -148,8 +148,8 @@ func loop(url string) {
 func main() {
 	user, err := user.Current()
 	checkError(err)
-	parsed_comicDir := flag.String("comicdir", filepath.Join(user.HomeDir, "/Documents/Comics"), "Comics download dir.")
-	parsed_testMode := flag.Bool("test", false, "Run in a test mode")
+	parsedComicDir := flag.String("comicdir", filepath.Join(user.HomeDir, "/Documents/Comics"), "Comics download dir.")
+	parsedTestMode := flag.Bool("test", false, "Run in a test mode")
 
 	flag.Usage = func() {
 		fmt.Printf("Usage: helloyolo [options] hello-comics-url\n\n")
@@ -163,11 +163,11 @@ func main() {
 		os.Exit(2)
 	}
 
-	comicsDir = *parsed_comicDir
+	comicsDir = *parsedComicDir
 	if _, err := os.Stat(comicsDir); os.IsNotExist(err) {
 		os.MkdirAll(comicsDir, 755)
 	}
-	testMode = *parsed_testMode
+	testMode = *parsedTestMode
 	if testMode {
 		log.Println("RUNNING IN TEST MODE")
 	}

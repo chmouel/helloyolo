@@ -70,9 +70,8 @@ func zipit(source, target string) error {
 
 		if info.IsDir() {
 			return nil
-		} else {
-			header.Method = zip.Deflate
 		}
+		header.Method = zip.Deflate
 
 		writer, err := archive.CreateHeader(header)
 		checkError(err)
