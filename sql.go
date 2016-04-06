@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS Comics (
 	Last integer,
 	CONSTRAINT uc_comicID UNIQUE (ComicName, Last))`
 
+// DBupdate Update DB
 func DBupdate(episode string, latest int) {
 	db, err := sql.Open("sqlite3", filepath.Join(comicsDir, ".helloyolo.db")) // TODO(chmouel):
 	if err != nil {
@@ -40,6 +41,7 @@ func DBupdate(episode string, latest int) {
 	}
 }
 
+// dbgetLatestEpisode we will use this!
 func dbgetLatestEpisode(episode string) {
 	db, err := sql.Open("sqlite3", "./foo.db") // TODO(chmouel):
 	if err != nil {
