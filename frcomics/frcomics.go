@@ -1,4 +1,4 @@
-package main
+package frcomics
 
 import (
 	"bufio"
@@ -12,6 +12,8 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/chmouel/helloyolo/utils"
 )
 
 const frComicPrefixURL string = "http://fr.comics-reader.com/read/"
@@ -22,7 +24,7 @@ type Pages struct {
 	Filename string `json:"filename"`
 }
 
-func frcomicsParse(nextLink string) (nextURL string) {
+func parse(nextLink string) (nextURL string) {
 	var comicName, fileName, episodeNumber string
 	var allImages []Pages
 
@@ -53,7 +55,7 @@ func frcomicsParse(nextLink string) (nextURL string) {
 			tmps = strings.TrimPrefix(tmps, "var pages = ")
 			tmps = strings.TrimSuffix(tmps, ";")
 			err := json.Unmarshal([]byte(tmps), &allImages)
-			checkError(err)
+			utils.CheckError(err)
 		}
 
 		if strings.HasPrefix(tmps, "var next_chapter = \"") {
@@ -91,7 +93,7 @@ func frcomicsParse(nextLink string) (nextURL string) {
 		temporaryFileImage := filepath.Join(dirImg, v.Filename)
 		if _, err := os.Stat(temporaryFileImage); os.IsNotExist(err) {
 			log.Printf("%s ", v.Filename)
-			wget(v.URL, temporaryFileImage)
+			utils.Wget(v.URL, temporaryFileImage)
 		}
 	}
 
@@ -102,28 +104,28 @@ func frcomicsParse(nextLink string) (nextURL string) {
 	}
 	targetCBZ := fmt.Sprintf("%s/%s.cbz", targetDir, episodeNumber)
 	if _, err := os.Stat(targetCBZ); os.IsNotExist(err) {
-		zipit(dirImg, targetCBZ)
+		utils.Zipit(dirImg, targetCBZ)
 		log.Printf("ZIP: %s ", targetCBZ)
 	}
 
 	reg, err := regexp.Compile("\\d+$")
-	checkError(err)
+	utils.CheckError(err)
 	match := reg.FindString(episodeNumber)
 	if match == "" {
 		log.Fatal("Cannot figure out the episode number?")
 	}
 	numero, err := strconv.Atoi(match)
-	checkError(err)
+	utils.CheckError(err)
 
-	DBupdate(episodeNumber, numero)
+	utils.DBupdate(episodeNumber, numero)
 	return nextURL
 }
 
 // getTMPFile ...
 func getURL(url string) string {
 	tmpfile, err := ioutil.TempFile("", ".xxxxxxx-download-comics")
-	checkError(err)
-	wget(url, tmpfile.Name())
+	utils.CheckError(err)
+	utils.Wget(url, tmpfile.Name())
 	return tmpfile.Name()
 }
 
@@ -133,10 +135,10 @@ func getEpisode(s string) string {
 	return fmt.Sprintf("%s-%s", sp[0], sp[len(sp)-1])
 }
 
-// FRComics loop over all the links
-func FRComics(nextLink string) {
+// Loop over all the links until the is none
+func Loop(nextLink string) {
 	for {
-		nextLink = frcomicsParse(nextLink)
+		nextLink = parse(nextLink)
 		if nextLink == "" {
 			break
 		}

@@ -8,6 +8,9 @@ import (
 	"os/user"
 	"path/filepath"
 	"strings"
+
+	"github.com/chmouel/helloyolo/frcomics"
+	"github.com/chmouel/helloyolo/utils"
 )
 
 var (
@@ -17,7 +20,7 @@ var (
 
 func main() {
 	user, err := user.Current()
-	checkError(err)
+	utils.CheckError(err)
 	parsedComicDir := flag.String("comicdir", filepath.Join(user.HomeDir, "/Documents/Comics"), "Comics download dir.")
 	parsedTestMode := flag.Bool("test", false, "Run in a test mode")
 
@@ -45,7 +48,7 @@ func main() {
 	url := flag.Args()[0]
 
 	if strings.HasPrefix(url, "http://fr.comics-reader.com/") {
-		FRComics(url)
+		frcomics.Loop(url)
 	} else if strings.HasPrefix(url, "http://www.hellocomic.com/") {
 		HelloComics(url)
 	}

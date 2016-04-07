@@ -1,9 +1,10 @@
-package main
+package utils
 
 import (
 	"database/sql"
 	"fmt"
 	"log"
+	"os/user"
 	"path/filepath"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -18,6 +19,8 @@ CREATE TABLE IF NOT EXISTS Comics (
 
 // DBupdate Update DB
 func DBupdate(episode string, latest int) {
+	user, err := user.Current()
+	comicsDir := filepath.Join(user.HomeDir, "/Documents/Comics")
 	db, err := sql.Open("sqlite3", filepath.Join(comicsDir, ".helloyolo.db")) // TODO(chmouel):
 	if err != nil {
 		log.Fatal(err)

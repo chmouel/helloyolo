@@ -1,4 +1,4 @@
-package main
+package utils
 
 import (
 	"archive/zip"
@@ -8,7 +8,8 @@ import (
 	"strings"
 )
 
-func zipit(source, target string) error {
+// Zipit zip a directory to a target
+func Zipit(source, target string) error {
 	zipfile, err := os.Create(target)
 	if err != nil {
 		return err
@@ -19,7 +20,7 @@ func zipit(source, target string) error {
 	defer archive.Close()
 
 	info, err := os.Stat(source)
-	checkError(err)
+	CheckError(err)
 
 	var baseDir string
 	if info.IsDir() {
@@ -27,10 +28,10 @@ func zipit(source, target string) error {
 	}
 
 	filepath.Walk(source, func(path string, info os.FileInfo, err error) error {
-		checkError(err)
+		CheckError(err)
 
 		header, err := zip.FileInfoHeader(info)
-		checkError(err)
+		CheckError(err)
 
 		if baseDir != "" {
 			header.Name = strings.TrimPrefix(path, source)
@@ -42,10 +43,10 @@ func zipit(source, target string) error {
 		header.Method = zip.Deflate
 
 		writer, err := archive.CreateHeader(header)
-		checkError(err)
+		CheckError(err)
 
 		file, err := os.Open(path)
-		checkError(err)
+		CheckError(err)
 
 		defer file.Close()
 		_, err = io.Copy(writer, file)

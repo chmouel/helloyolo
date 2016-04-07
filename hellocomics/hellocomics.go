@@ -1,4 +1,4 @@
-package main
+package hellocomics
 
 import (
 	"bufio"
@@ -11,28 +11,28 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/chmouel/helloyolo/utils"
 )
 
-func helloPack(comicsDir, comicname, episode string) {
+func pack(comicname, episode string) {
 	r, err := regexp.Compile("\\d+$")
-	checkError(err)
+	utils.CheckError(err)
 	match := r.FindString(episode)
 	if match == "" {
 		log.Fatal("Cannot figure out the episode number?")
 	}
 	episodeNumber, err := strconv.Atoi(match)
-	checkError(err)
+	utils.CheckError(err)
 
-	DBupdate(episode, episodeNumber)
+	utils.DBupdate(episode, episodeNumber)
 
 	cbzDir := filepath.Join(comicsDir, comicname)
 	os.MkdirAll(cbzDir, 0755)
 	cbzFile := fmt.Sprintf("%s/%s.cbz", cbzDir, episode)
 	tmpDir := filepath.Join(os.TempDir(), comicname, episode)
 	if _, err := os.Stat(cbzFile); os.IsNotExist(err) {
-		if testMode == false {
-			zipit(tmpDir, cbzFile)
-		}
+		utils.Zipit(tmpDir, cbzFile)
 		log.Printf("ZIP: %s\n", cbzFile)
 	} else {
 		log.Printf("ZIP: Skipping %s\n", cbzFile)
@@ -43,17 +43,17 @@ func helloPack(comicsDir, comicname, episode string) {
 
 func helloParse(url string) (nextLink, comicname, episode string) {
 	tmpfile, err := ioutil.TempFile("", ".xxxxxxx-download-comics")
-	checkError(err)
+	utils.CheckError(err)
 	defer os.Remove(tmpfile.Name()) // clean up
 
-	wget(url, tmpfile.Name())
+	utils.Wget(url, tmpfile.Name())
 
 	rimg, err := regexp.Compile("a href.*img src=\"(.*.jpg)\".*div")
-	checkError(err)
+	utils.CheckError(err)
 	rnext, err := regexp.Compile("a class=\"nextLink nextBtn\" href=\"([^\"]*)\"")
-	checkError(err)
+	utils.CheckError(err)
 	inFile, err := os.Open(tmpfile.Name())
-	checkError(err)
+	utils.CheckError(err)
 	defer inFile.Close()
 
 	scanner := bufio.NewScanner(inFile)
@@ -72,9 +72,7 @@ func helloParse(url string) (nextLink, comicname, episode string) {
 			os.MkdirAll(dirimg, 0755)
 			if _, err := os.Stat(fullimage); os.IsNotExist(err) {
 				log.Printf("IMG: %s\n", img)
-				if testMode == false {
-					wget(img, fullimage)
-				}
+				utils.Wget(img, fullimage)
 			}
 		}
 	}
@@ -83,7 +81,6 @@ func helloParse(url string) (nextLink, comicname, episode string) {
 
 //HelloComics stuff
 func HelloComics(url string) {
-	fmt.Println("hello")
 	var next, comicname, episode string
 
 	next, comicname, episode = helloParse(url)
@@ -92,11 +89,11 @@ func HelloComics(url string) {
 	for {
 		next, comicname, episode = helloParse(next)
 
-		if episode != previousEpisode {
-			helloPack(comicsDir, comicname, previousEpisode)
-		}
 		if strings.HasPrefix(next, "http://www.hellocomic.com/comic/view?slug=") || next == "" {
-			helloPack(comicsDir, comicname, episode)
+			previousEpisode = ""
+		}
+		if episode != previousEpisode {
+			pack(comicname, previousEpisode)
 		}
 		previousEpisode = episode
 	}
