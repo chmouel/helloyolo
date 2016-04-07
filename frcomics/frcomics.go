@@ -7,7 +7,6 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-	"os/user"
 	"path/filepath"
 	"regexp"
 	"strconv"
@@ -15,6 +14,8 @@ import (
 
 	"github.com/chmouel/helloyolo/utils"
 )
+
+var config = make(map[string]string)
 
 const frComicPrefixURL string = "http://fr.comics-reader.com/read/"
 
@@ -97,8 +98,7 @@ func parse(nextLink string) (nextURL string) {
 		}
 	}
 
-	user, err := user.Current()
-	targetDir := filepath.Join(user.HomeDir, "/Documents/Comics", comicName)
+	targetDir := filepath.Join(config["comicdir"], "/Documents/Comics", comicName)
 	if _, err := os.Stat(targetDir); os.IsNotExist(err) {
 		os.MkdirAll(targetDir, 0755)
 	}
@@ -136,9 +136,10 @@ func getEpisode(s string) string {
 }
 
 // Loop over all the links until the is none
-func Loop(nextLink string) {
+func Loop(cfg map[string]string) {
+	config = cfg
 	for {
-		nextLink = parse(nextLink)
+		nextLink := parse(cfg["url"])
 		if nextLink == "" {
 			break
 		}

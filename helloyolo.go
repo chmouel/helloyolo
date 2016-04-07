@@ -7,18 +7,17 @@ import (
 	"os"
 	"os/user"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/chmouel/helloyolo/frcomics"
+	"github.com/chmouel/helloyolo/hellocomics"
 	"github.com/chmouel/helloyolo/utils"
 )
 
-var (
-	comicsDir string
-	testMode  bool
-)
-
 func main() {
+	var cfg = make(map[string]string)
+
 	user, err := user.Current()
 	utils.CheckError(err)
 	parsedComicDir := flag.String("comicdir", filepath.Join(user.HomeDir, "/Documents/Comics"), "Comics download dir.")
@@ -36,20 +35,22 @@ func main() {
 		os.Exit(2)
 	}
 
-	comicsDir = *parsedComicDir
-	if _, err := os.Stat(comicsDir); os.IsNotExist(err) {
-		os.MkdirAll(comicsDir, 755)
+	if _, err := os.Stat(*parsedComicDir); os.IsNotExist(err) {
+		os.MkdirAll(*parsedComicDir, 755)
 	}
-	testMode = *parsedTestMode
-	if testMode {
+	cfg["comicDir"] = *parsedComicDir
+
+	if *parsedTestMode {
 		log.Println("RUNNING IN TEST MODE")
 	}
+	cfg["testMode"] = strconv.FormatBool(*parsedTestMode)
 
 	url := flag.Args()[0]
+	cfg["url"] = url
 
 	if strings.HasPrefix(url, "http://fr.comics-reader.com/") {
-		frcomics.Loop(url)
+		frcomics.Loop(cfg)
 	} else if strings.HasPrefix(url, "http://www.hellocomic.com/") {
-		HelloComics(url)
+		hellocomics.HelloComics(cfg)
 	}
 }

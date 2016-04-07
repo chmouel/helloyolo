@@ -15,6 +15,8 @@ import (
 	"github.com/chmouel/helloyolo/utils"
 )
 
+var config = make(map[string]string)
+
 func pack(comicname, episode string) {
 	r, err := regexp.Compile("\\d+$")
 	utils.CheckError(err)
@@ -27,7 +29,7 @@ func pack(comicname, episode string) {
 
 	utils.DBupdate(episode, episodeNumber)
 
-	cbzDir := filepath.Join(comicsDir, comicname)
+	cbzDir := filepath.Join(config["comicDir"], comicname)
 	os.MkdirAll(cbzDir, 0755)
 	cbzFile := fmt.Sprintf("%s/%s.cbz", cbzDir, episode)
 	tmpDir := filepath.Join(os.TempDir(), comicname, episode)
@@ -80,10 +82,11 @@ func helloParse(url string) (nextLink, comicname, episode string) {
 }
 
 //HelloComics stuff
-func HelloComics(url string) {
+func HelloComics(cfg map[string]string) {
 	var next, comicname, episode string
+	config = cfg
 
-	next, comicname, episode = helloParse(url)
+	next, comicname, episode = helloParse(config["url"])
 
 	previousEpisode := episode
 	for {
