@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"log"
 	"os"
 	"os/user"
 	"path/filepath"
@@ -36,13 +35,10 @@ func main() {
 	}
 
 	if _, err := os.Stat(*parsedComicDir); os.IsNotExist(err) {
-		os.MkdirAll(*parsedComicDir, 755)
+		err := os.MkdirAll(*parsedComicDir, 755)
+		utils.CheckError(err)
 	}
 	cfg["comicDir"] = *parsedComicDir
-
-	if *parsedTestMode {
-		log.Println("RUNNING IN TEST MODE")
-	}
 	cfg["testMode"] = strconv.FormatBool(*parsedTestMode)
 
 	url := flag.Args()[0]
@@ -53,4 +49,5 @@ func main() {
 	} else if strings.HasPrefix(url, "http://www.hellocomic.com/") {
 		hellocomics.HelloComics(cfg)
 	}
+
 }
