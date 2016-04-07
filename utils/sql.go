@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS Comics (
 func DBupdate(episode string, latest int) {
 	user, err := user.Current()
 	comicsDir := filepath.Join(user.HomeDir, "/Documents/Comics")
-	db, err := sql.Open("sqlite3", filepath.Join(comicsDir, ".helloyolo.db")) // TODO(chmouel):
+	db, err := sql.Open("sqlite3", filepath.Join(comicsDir, ".helloyolo.db"))
 	if err != nil {
 		log.Fatal(err)
 	}
