@@ -12,18 +12,12 @@ CREATE TABLE IF NOT EXISTS Comics (
 	id integer PRIMARY KEY,
 	ComicName varchar(255) NOT NULL,
 	LastEpisode integer,
-    Subscribed BOOLEAN NOT NULL DEFAULT 0,
     DateTime datetime default current_timestamp,
-    CHECK (Subscribed IN (0,1)),
 	CONSTRAINT uc_comicID UNIQUE (ComicName))`
 
-// DBupdate Update DB
-func DBupdate(comicsDir, episode string, latest int) {
-	// TODO(chmou): Make it using the global flags
+func createTable(comicsDir string) (db *sql.DB) {
 	db, err := sql.Open("sqlite3", filepath.Join(comicsDir, ".helloyolo.db"))
 	CheckError(err)
-
-	defer db.Close()
 
 	stmt, err := db.Prepare(sqlTable)
 	CheckError(err)
@@ -31,9 +25,33 @@ func DBupdate(comicsDir, episode string, latest int) {
 	_, err = stmt.Exec()
 	CheckError(err)
 
-	stmt, err = db.Prepare("INSERT OR REPLACE INTO Comics(ComicName, LastEpisode) values(?,?)")
+	return db
+}
+
+// DBupdate Update DB
+func DBupdate(comicsDir, comicname string, latest int) {
+	// TODO(chmou): Make it using the global flags
+	db := createTable(comicsDir)
+	defer db.Close()
+
+	stmt, err := db.Prepare("INSERT OR REPLACE INTO Comics(ComicName, LastEpisode) values(?,?)")
 	CheckError(err)
 
-	_, err = stmt.Exec(episode, latest)
+	_, err = stmt.Exec(comicname, latest)
 	CheckError(err)
+}
+
+// DBCheckLatest episode
+func DBCheckLatest(comicsDir, comicsname string, latest int) bool {
+	var needUpdate int
+	db := createTable(comicsDir)
+	defer db.Close()
+
+	_ = db.QueryRow("select 1 from comics where comicName = ? and lastepisode < ?", comicsname, latest).Scan(&needUpdate)
+
+	if needUpdate == 1 {
+		return true
+	}
+
+	return false
 }
