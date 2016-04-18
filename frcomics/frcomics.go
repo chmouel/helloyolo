@@ -117,7 +117,7 @@ func parse(nextLink string) (nextURL string) {
 	numero, err := strconv.Atoi(match)
 	utils.CheckError(err)
 
-	utils.DBupdate(episodeNumber, numero)
+	utils.DBupdate(config["comicDir"], episodeNumber, numero)
 	return nextURL
 }
 

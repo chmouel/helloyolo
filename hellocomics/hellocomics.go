@@ -24,7 +24,7 @@ func pack(comicname, episode string) {
 	if match != "" {
 		episodeNumber, err := strconv.Atoi(match)
 		utils.CheckError(err)
-		utils.DBupdate(comicname, episodeNumber)
+		utils.DBupdate(config["comicDir"], comicname, episodeNumber)
 	} else {
 		log.Println("Cannot figure out the episode number? not updating DB: " + episode)
 	}

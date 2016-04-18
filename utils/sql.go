@@ -2,7 +2,6 @@ package utils
 
 import (
 	"database/sql"
-	"os/user"
 	"path/filepath"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -19,10 +18,8 @@ CREATE TABLE IF NOT EXISTS Comics (
 	CONSTRAINT uc_comicID UNIQUE (ComicName))`
 
 // DBupdate Update DB
-func DBupdate(episode string, latest int) {
-	user, err := user.Current()
+func DBupdate(comicsDir, episode string, latest int) {
 	// TODO(chmou): Make it using the global flags
-	comicsDir := filepath.Join(user.HomeDir, "/Documents/Comics")
 	db, err := sql.Open("sqlite3", filepath.Join(comicsDir, ".helloyolo.db"))
 	CheckError(err)
 
