@@ -30,11 +30,14 @@ func pack(comicname, episode string) {
 	}
 
 	cbzDir := filepath.Join(config["comicDir"], comicname)
-	os.MkdirAll(cbzDir, 0755)
+	err = os.MkdirAll(cbzDir, 0755)
+	utils.CheckError(err)
+
 	cbzFile := fmt.Sprintf("%s/%s.cbz", cbzDir, episode)
 	tmpDir := filepath.Join(os.TempDir(), comicname, episode)
 	if _, err := os.Stat(cbzFile); os.IsNotExist(err) {
-		utils.Zipit(tmpDir, cbzFile)
+		err = utils.Zipit(tmpDir, cbzFile)
+		utils.CheckError(err)
 		log.Printf("ZIP: %s\n", cbzFile)
 	} else {
 		log.Printf("ZIP: Skipping %s\n", cbzFile)
