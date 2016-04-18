@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS Comics (
 	id integer PRIMARY KEY,
 	ComicName varchar(255) NOT NULL,
 	Last integer,
-	CONSTRAINT uc_comicID UNIQUE (ComicName, Last))`
+	CONSTRAINT uc_comicID UNIQUE (ComicName))`
 
 // DBupdate Update DB
 func DBupdate(episode string, latest int) {
