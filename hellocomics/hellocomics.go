@@ -21,13 +21,13 @@ func pack(comicname, episode string) {
 	r, err := regexp.Compile("\\d+$")
 	utils.CheckError(err)
 	match := r.FindString(episode)
-	if match == "" {
-		log.Fatal("Cannot figure out the episode number?")
+	if match != "" {
+		episodeNumber, err := strconv.Atoi(match)
+		utils.CheckError(err)
+		utils.DBupdate(comicname, episodeNumber)
+	} else {
+		log.Println("Cannot figure out the episode number? not updating DB: " + episode)
 	}
-	episodeNumber, err := strconv.Atoi(match)
-	utils.CheckError(err)
-
-	utils.DBupdate(episode, episodeNumber)
 
 	cbzDir := filepath.Join(config["comicDir"], comicname)
 	os.MkdirAll(cbzDir, 0755)
@@ -93,7 +93,8 @@ func HelloComics(cfg map[string]string) {
 		next, comicname, episode = helloParse(next)
 
 		if strings.HasPrefix(next, "http://www.hellocomic.com/comic/view?slug=") || next == "" {
-			previousEpisode = ""
+			pack(comicname, episode)
+			break
 		}
 		if episode != previousEpisode {
 			pack(comicname, previousEpisode)
