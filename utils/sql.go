@@ -2,8 +2,6 @@ package utils
 
 import (
 	"database/sql"
-	"fmt"
-	"log"
 	"os/user"
 	"path/filepath"
 
@@ -41,31 +39,4 @@ func DBupdate(episode string, latest int) {
 
 	_, err = stmt.Exec(episode, latest)
 	CheckError(err)
-}
-
-// dbgetLatestEpisode we will use this!
-func dbgetLatestEpisode(episode string) {
-	db, err := sql.Open("sqlite3", "./foo.db") // TODO(chmouel):
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer db.Close()
-
-	stmt, err := db.Prepare("SELECT LastEpisode FROM Comics where comicname=?")
-	if err != nil {
-		log.Fatal(err)
-	}
-	res, err := stmt.Query(episode)
-	if err != nil {
-		log.Fatal(err)
-	}
-	for res.Next() {
-		var last int
-		err = res.Scan(&last)
-		if err != nil {
-			log.Fatal(err)
-		}
-		fmt.Println(last)
-	}
-
 }
