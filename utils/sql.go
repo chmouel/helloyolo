@@ -14,34 +14,33 @@ var sqlTable = `
 CREATE TABLE IF NOT EXISTS Comics (
 	id integer PRIMARY KEY,
 	ComicName varchar(255) NOT NULL,
-	Last integer,
+	LastEpisode integer,
+    Subscribed BOOLEAN NOT NULL DEFAULT 0,
+    DateTime datetime default current_timestamp,
+    CHECK (Subscribed IN (0,1)),
 	CONSTRAINT uc_comicID UNIQUE (ComicName))`
 
 // DBupdate Update DB
 func DBupdate(episode string, latest int) {
 	user, err := user.Current()
+	// TODO(chmou): Make it using the global flags
 	comicsDir := filepath.Join(user.HomeDir, "/Documents/Comics")
 	db, err := sql.Open("sqlite3", filepath.Join(comicsDir, ".helloyolo.db"))
-	if err != nil {
-		log.Fatal(err)
-	}
+	CheckError(err)
+
 	defer db.Close()
 
 	stmt, err := db.Prepare(sqlTable)
-	if err != nil {
-		log.Fatal(err)
-	}
-	stmt.Exec()
+	CheckError(err)
 
-	stmt, err = db.Prepare("INSERT OR REPLACE INTO Comics(comicname, last) values(?,?)")
-	if err != nil {
-		log.Fatal(err)
-	}
+	_, err = stmt.Exec()
+	CheckError(err)
+
+	stmt, err = db.Prepare("INSERT OR REPLACE INTO Comics(ComicName, LastEpisode) values(?,?)")
+	CheckError(err)
+
 	_, err = stmt.Exec(episode, latest)
-
-	if err != nil {
-		log.Fatal(err)
-	}
+	CheckError(err)
 }
 
 // dbgetLatestEpisode we will use this!
@@ -52,7 +51,7 @@ func dbgetLatestEpisode(episode string) {
 	}
 	defer db.Close()
 
-	stmt, err := db.Prepare("SELECT last FROM Comics where comicname=?")
+	stmt, err := db.Prepare("SELECT LastEpisode FROM Comics where comicname=?")
 	if err != nil {
 		log.Fatal(err)
 	}
