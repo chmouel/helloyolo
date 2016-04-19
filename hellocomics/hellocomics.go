@@ -28,23 +28,17 @@ func GetUpdate(cfg map[string]string) {
 	utils.Wget("http://www.hellocomic.com/", tmpfile.Name())
 
 	r, err := os.Open(tmpfile.Name())
-	if err != nil {
-		log.Fatal(err)
-	}
+	utils.CheckError(err)
+
 	doc, err := goquery.NewDocumentFromReader(r)
-	if err != nil {
-		log.Fatal(err)
-	}
+	utils.CheckError(err)
 
 	doc.Find("dd").Each(func(i int, s *goquery.Selection) {
 		val, exist := s.Children().Attr("href")
 		if exist {
 			splits := strings.Split(strings.TrimPrefix(val, "http://www.hellocomic.com/"), "/")
 			episodeNumber, err := strconv.Atoi(strings.TrimPrefix(splits[1], "c"))
-			if err != nil {
-				log.Fatal(err)
-			}
-
+			utils.CheckError(err)
 			comicname := splits[0]
 
 			needupdate := utils.DBCheckLatest(config["comicDir"], comicname, episodeNumber)
