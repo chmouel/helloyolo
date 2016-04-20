@@ -34,7 +34,7 @@ func DBupdate(comicsDir, comicname string, latest int) {
 	db := createTable(comicsDir)
 	defer db.Close()
 
-	stmt, err := db.Prepare("INSERT OR REPLACE INTO Comics(ComicName, LastEpisode) values(?,?)")
+	stmt, err := db.Prepare("INSERT OR REPLACE INTO Comics(ComicName, LastEpisode, Subscribed) values(?,?,(SELECT subscribed FROM Comics WHERE comicname='" + comicname + "'))")
 	CheckError(err)
 
 	_, err = stmt.Exec(comicname, latest)
@@ -47,7 +47,7 @@ func DBCheckLatest(comicsDir, comicsname string, latest int) bool {
 	db := createTable(comicsDir)
 	defer db.Close()
 
-	_ = db.QueryRow("select 1 from comics where comicName = ? and lastepisode < ?", comicsname, latest).Scan(&needUpdate)
+	_ = db.QueryRow("select 1 from comics where comicName = ? and subscribed=1 and lastepisode < ?", comicsname, latest).Scan(&needUpdate)
 
 	if needUpdate == 1 {
 		return true
