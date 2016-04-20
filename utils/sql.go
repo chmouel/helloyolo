@@ -55,3 +55,15 @@ func DBCheckLatest(comicsDir, comicsname string, latest int) bool {
 
 	return false
 }
+
+// DBSubscribe episode
+func DBSubscribe(comicsDir, comicsname string) {
+	db := createTable(comicsDir)
+	defer db.Close()
+
+	stmt, err := db.Prepare("UPDATE Comics SET subscribed=1 WHERE comicname=?")
+	CheckError(err)
+
+	_, err = stmt.Exec(comicsname)
+	CheckError(err)
+}

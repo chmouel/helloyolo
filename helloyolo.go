@@ -19,8 +19,9 @@ func main() {
 
 	user, err := user.Current()
 	utils.CheckError(err)
-	parsedComicDir := flag.String("comicdir", filepath.Join(user.HomeDir, "/Documents/Comics"), "Comics download dir.")
-	parsedTestMode := flag.Bool("test", false, "Run in a test mode")
+	comicDir := flag.String("comicdir", filepath.Join(user.HomeDir, "/Documents/Comics"), "Comics download dir.")
+	testMode := flag.Bool("test", false, "Run in a test mode")
+	subscribe := flag.String("s", "", "Subscribe to a comic already in DB")
 	update := flag.Bool("u", false, "Check if needed update")
 
 	flag.Usage = func() {
@@ -30,12 +31,18 @@ func main() {
 
 	flag.Parse()
 
-	if _, err := os.Stat(*parsedComicDir); os.IsNotExist(err) {
-		err := os.MkdirAll(*parsedComicDir, 755)
+	if _, err := os.Stat(*comicDir); os.IsNotExist(err) {
+		err := os.MkdirAll(*comicDir, 755)
 		utils.CheckError(err)
 	}
-	cfg["comicDir"] = *parsedComicDir
-	cfg["testMode"] = strconv.FormatBool(*parsedTestMode)
+	cfg["comicDir"] = *comicDir
+	cfg["testMode"] = strconv.FormatBool(*testMode)
+
+	if *subscribe != "" {
+		utils.DBSubscribe(*comicDir, *subscribe)
+		fmt.Println(*subscribe, "has been subscribed.")
+		os.Exit(0)
+	}
 
 	if *update {
 		hellocomics.GetUpdate(cfg)
