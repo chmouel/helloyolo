@@ -23,6 +23,7 @@ func main() {
 	testMode := flag.Bool("test", false, "Run in a test mode")
 	subscribe := flag.String("s", "", "Subscribe to a comic already in DB")
 	update := flag.Bool("u", false, "Check if needed update")
+	updatePrint := flag.Bool("up", false, "Check update but only print and update DB (cron notification mode)")
 
 	flag.Usage = func() {
 		fmt.Printf("Usage: helloyolo [options] hello-comics-url\n\n")
@@ -45,7 +46,12 @@ func main() {
 	}
 
 	if *update {
-		hellocomics.GetUpdate(cfg)
+		hellocomics.GetUpdate(cfg, false)
+		os.Exit(0)
+	}
+
+	if *updatePrint {
+		hellocomics.GetUpdate(cfg, true)
 		os.Exit(0)
 	}
 

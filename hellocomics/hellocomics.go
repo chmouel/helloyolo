@@ -19,7 +19,7 @@ import (
 var config = make(map[string]string)
 
 // GetUpdate get all update to makes
-func GetUpdate(cfg map[string]string) {
+func GetUpdate(cfg map[string]string, updateMode bool) {
 	config = cfg
 
 	tmpfile, err := ioutil.TempFile("", ".xxxxxxx-download-comics")
@@ -42,7 +42,10 @@ func GetUpdate(cfg map[string]string) {
 			comicname := splits[0]
 
 			needupdate := utils.DBCheckLatest(config["comicDir"], comicname, episodeNumber)
-			if needupdate {
+			if needupdate && updateMode {
+				fmt.Printf("%s-%d -- %s\n", comicname, episodeNumber, val)
+				utils.DBupdate(config["comicDir"], comicname, episodeNumber)
+			} else if needupdate {
 				fmt.Println("Updating", comicname, episodeNumber)
 				cfg["url"] = val
 				HelloComics(cfg)
