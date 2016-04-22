@@ -75,7 +75,7 @@ func parse(nextLink string) (nextURL string) {
 	}
 
 	if comicName == "" {
-		log.Fatal("I didn't get the comicName which is weird")
+		log.Fatal("I didn't get the comicName which is weird\nMake sure you have the page with the image something like http://fr.comics-reader.com/read/batman__new_52_fr/fr/1/0/")
 	}
 	if episodeNumber == "" {
 		log.Fatal("I didn't get the episodeNumber which is weird")
