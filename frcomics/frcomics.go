@@ -73,7 +73,6 @@ func parse(nextLink string) (nextURL string) {
 			episodeNumber = getEpisode(tmps)
 		}
 	}
-
 	if comicName == "" {
 		log.Fatal("I didn't get the comicName which is weird\nMake sure you have the page with the image something like http://fr.comics-reader.com/read/batman__new_52_fr/fr/1/0/")
 	}
@@ -93,12 +92,12 @@ func parse(nextLink string) (nextURL string) {
 	for _, v := range allImages {
 		temporaryFileImage := filepath.Join(dirImg, v.Filename)
 		if _, err := os.Stat(temporaryFileImage); os.IsNotExist(err) {
-			log.Printf("%s ", v.Filename)
-			utils.Curl(v.URL, temporaryFileImage, "")
+			log.Printf(v.Filename)
+			utils.Wget(v.URL, temporaryFileImage)
 		}
 	}
 
-	targetDir := filepath.Join(config["comicdir"], "/Documents/Comics", comicName)
+	targetDir := filepath.Join(config["comicDir"], comicName)
 	if _, err := os.Stat(targetDir); os.IsNotExist(err) {
 		os.MkdirAll(targetDir, 0755)
 	}
@@ -132,14 +131,15 @@ func getURL(url string) string {
 func getEpisode(s string) string {
 	s = strings.TrimSuffix(s, "/")
 	sp := strings.Split(strings.TrimPrefix(s, frComicPrefixURL), "/")
-	return fmt.Sprintf("%s-%s", sp[0], sp[len(sp)-1])
+	return fmt.Sprintf("%s-%s", sp[0], sp[len(sp)-2])
 }
 
 // Loop over all the links until the is none
 func Loop(cfg map[string]string) {
 	config = cfg
+	nextLink := cfg["url"]
 	for {
-		nextLink := parse(cfg["url"])
+		nextLink = parse(nextLink)
 		if nextLink == "" {
 			break
 		}

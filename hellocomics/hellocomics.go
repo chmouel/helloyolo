@@ -25,7 +25,7 @@ func GetUpdate(cfg map[string]string, updateMode bool) {
 	tmpfile, err := ioutil.TempFile("", ".xxxxxxx-download-comics")
 	utils.CheckError(err)
 	defer os.Remove(tmpfile.Name()) // clean up
-	utils.Curl("http://www.hellocomic.com/", tmpfile.Name(), "")
+	utils.Wget("http://www.hellocomic.com/", tmpfile.Name())
 
 	r, err := os.Open(tmpfile.Name())
 	utils.CheckError(err)
@@ -91,7 +91,7 @@ func helloParse(url string) (nextLink, comicname, episode string) {
 	utils.CheckError(err)
 	defer os.Remove(tmpfile.Name()) // clean up
 
-	utils.Curl(url, tmpfile.Name(), "")
+	utils.Wget(url, tmpfile.Name())
 
 	rimg, err := regexp.Compile("a href.*img src=\"(.*.jpg)\".*div")
 	utils.CheckError(err)
@@ -117,7 +117,7 @@ func helloParse(url string) (nextLink, comicname, episode string) {
 			os.MkdirAll(dirimg, 0755)
 			if _, err := os.Stat(fullimage); os.IsNotExist(err) {
 				log.Printf("IMG: %s\n", img)
-				utils.Curl(img, fullimage, "")
+				utils.Wget(img, fullimage)
 			}
 		}
 	}
