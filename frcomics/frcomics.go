@@ -94,7 +94,7 @@ func parse(nextLink string) (nextURL string) {
 		temporaryFileImage := filepath.Join(dirImg, v.Filename)
 		if _, err := os.Stat(temporaryFileImage); os.IsNotExist(err) {
 			log.Printf("%s ", v.Filename)
-			utils.Wget(v.URL, temporaryFileImage)
+			utils.Curl(v.URL, temporaryFileImage, "")
 		}
 	}
 
@@ -125,7 +125,7 @@ func parse(nextLink string) (nextURL string) {
 func getURL(url string) string {
 	tmpfile, err := ioutil.TempFile("", ".xxxxxxx-download-comics")
 	utils.CheckError(err)
-	utils.Wget(url, tmpfile.Name())
+	utils.Curl(url, tmpfile.Name(), "-F adult=true")
 	return tmpfile.Name()
 }
 

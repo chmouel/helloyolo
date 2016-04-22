@@ -12,12 +12,12 @@ func CheckError(err error) {
 	}
 }
 
-//Wget get url to a dest locally with wget directly, the builtin one of getting
-//via go was for whatever reason too slow
-func Wget(url, dest string) {
-	wgetExec, err := exec.LookPath("wget")
+//Curl get url to a dest locally with curl directly, the builtin one of getting
+//via go was for whatever reason too slow, `optionals` would pass optionals args
+func Curl(url, dest, optionals string) {
+	curlExec, err := exec.LookPath("curl")
 	CheckError(err)
 
-	_, err = exec.Command(wgetExec, "-c", "-O", dest, url).Output()
+	_, err = exec.Command(curlExec, "-o", dest, optionals, url).Output()
 	CheckError(err)
 }

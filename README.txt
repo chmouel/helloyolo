@@ -4,7 +4,7 @@ You just provide a hellocomic, fr.comics-reader.com URL and it will download
 them and generate zip
 files sorted in ~/Documents/Comics/comic-name/comic-episode.cbz
 
-It uses real wget for downloading since the internal one was very slow for
+It uses real curl for downloading since the internal one was very slow for
 frComic if that's an issue for someone
 i can get the internal one as fallback again to be truly os independent.
 
