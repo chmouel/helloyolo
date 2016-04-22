@@ -36,7 +36,10 @@ func GetUpdate(cfg map[string]string, updateMode bool) {
 	doc.Find("dd").Each(func(i int, s *goquery.Selection) {
 		val, exist := s.Children().Attr("href")
 		if exist {
-			splits := strings.Split(strings.TrimPrefix(val, "http://www.hellocomic.com/"), "/")
+			// TODO(chmouel): convert to a regexp
+			trimmed := strings.TrimPrefix(val, "https://www.hellocomic.com/")
+			trimmed = strings.TrimPrefix(trimmed, "http://www.hellocomic.com/")
+			splits := strings.Split(trimmed, "/")
 			episodeNumber, err := strconv.Atoi(strings.TrimPrefix(splits[1], "c"))
 			utils.CheckError(err)
 			comicname := splits[0]
