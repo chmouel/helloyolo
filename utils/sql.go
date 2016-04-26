@@ -2,6 +2,7 @@ package utils
 
 import (
 	"database/sql"
+	"fmt"
 	"path/filepath"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -34,7 +35,11 @@ func DBupdate(comicsDir, comicname string, latest int) {
 	db := createTable(comicsDir)
 	defer db.Close()
 
-	stmt, err := db.Prepare("INSERT OR REPLACE INTO Comics(ComicName, LastEpisode, Subscribed) values(?,?,(SELECT subscribed FROM Comics WHERE comicname='" + comicname + "'))")
+	sql := fmt.Sprintf(`
+INSERT OR REPLACE INTO Comics(ComicName, LastEpisode, Subscribed)
+VALUES(?,?,(SELECT subscribed FROM Comics WHERE comicname='%s'))
+`, comicname)
+	stmt, err := db.Prepare(sql)
 	CheckError(err)
 
 	_, err = stmt.Exec(comicname, latest)
