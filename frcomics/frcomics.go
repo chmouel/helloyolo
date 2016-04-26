@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"os"
@@ -31,6 +32,10 @@ func parse(nextLink string) (nextURL string) {
 
 	rComicName, err := regexp.Compile("<h1 class=\"tbtitle dnone\"><a href=\"[^\"]*\" title=\"([^\"]*)\">.* :: ")
 	utils.CheckError(err)
+	rCurrentEpisode, err := regexp.Compile("<a href=\"([^\"]*)\" onClick=\"return nextPage()")
+	utils.CheckError(err)
+	rAllPages, err := regexp.Compile("var pages = (.*);$")
+	utils.CheckError(err)
 
 	if _, err := os.Stat(nextLink); os.IsNotExist(err) {
 		fileName = getURL(nextLink)
@@ -40,28 +45,30 @@ func parse(nextLink string) (nextURL string) {
 		fileName = nextLink
 	}
 
-	r, err := os.Open(fileName)
+	f, err := os.Open(fileName)
 	if err != nil {
 		log.Fatal(err)
 	}
-	scanner := bufio.NewScanner(r)
-	for scanner.Scan() {
-		tmps := strings.TrimSpace(scanner.Text())
+	defer f.Close()
+
+	r := bufio.NewReaderSize(f, 4*bufio.MaxScanTokenSize)
+	line, isPrefix, scanErr := r.ReadLine()
+	for scanErr == nil && !isPrefix {
+		tmps := strings.TrimSpace(string(line))
 
 		comicNameMatch := rComicName.FindStringSubmatch(tmps)
 		if len(comicNameMatch) != 0 {
 			comicName = comicNameMatch[1]
 		}
 
-		if strings.HasPrefix(tmps, "var base_url =") {
-			tmps = strings.TrimPrefix(tmps, "var base_url = '")
-			tmps = strings.TrimSuffix(tmps, "';")
-			episodeNumber = getEpisode(tmps)
+		currentEpisode := rCurrentEpisode.FindStringSubmatch(tmps)
+		if len(currentEpisode) != 0 {
+			episodeNumber = getEpisode(currentEpisode[1])
 		}
 
-		if strings.HasPrefix(tmps, "var pages = [{") {
-			tmps = strings.TrimPrefix(tmps, "var pages = ")
-			tmps = strings.TrimSuffix(tmps, ";")
+		jsAllPages := rAllPages.FindStringSubmatch(tmps)
+		if len(jsAllPages) != 0 {
+			tmps = jsAllPages[1]
 			err := json.Unmarshal([]byte(tmps), &allImages)
 			utils.CheckError(err)
 		}
@@ -73,8 +80,17 @@ func parse(nextLink string) (nextURL string) {
 				nextURL = tmps
 			}
 		}
-
+		line, isPrefix, scanErr = r.ReadLine()
 	}
+
+	if isPrefix {
+		fmt.Println("buffer size to small")
+		return
+	}
+	if scanErr != io.EOF {
+		log.Fatal(err)
+	}
+
 	if comicName == "" {
 		log.Fatal("I didn't get the comicName which is weird\nMake sure you have the page with the image something like http://fr.comics-reader.com/read/batman__new_52_fr/fr/1/0/")
 	}
@@ -91,6 +107,7 @@ func parse(nextLink string) (nextURL string) {
 	if _, err := os.Stat(dirImg); os.IsNotExist(err) {
 		os.MkdirAll(dirImg, 0755)
 	}
+
 	for _, v := range allImages {
 		temporaryFileImage := filepath.Join(dirImg, v.Filename)
 		if _, err := os.Stat(temporaryFileImage); os.IsNotExist(err) {
