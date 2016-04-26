@@ -107,16 +107,17 @@ func parse(nextLink string) (nextURL string) {
 		log.Printf("ZIP: %s ", targetCBZ)
 	}
 
-	reg, err := regexp.Compile("\\d+$")
+	reg, err := regexp.Compile("(.*)-(\\d+)$")
 	utils.CheckError(err)
-	match := reg.FindString(episodeNumber)
-	if match == "" {
+	match := reg.FindStringSubmatch(episodeNumber)
+	if len(match) != 3 {
 		log.Fatal("Cannot figure out the episode number?")
 	}
-	numero, err := strconv.Atoi(match)
+
+	numero, err := strconv.Atoi(match[2])
 	utils.CheckError(err)
 
-	utils.DBupdate(config["comicDir"], episodeNumber, numero)
+	utils.DBupdate(config["comicDir"], match[1], numero)
 	return nextURL
 }
 
