@@ -16,16 +16,16 @@ import (
 	"github.com/chmouel/helloyolo/utils"
 )
 
+const updatepagetofetch int = 3
+
 var config = make(map[string]string)
 
-// GetUpdate get all update to makes
-func GetUpdate(cfg map[string]string, updateMode bool) {
-	config = cfg
-
+// GetUpdatePageNumber get update of page number
+func GetUpdatePageNumber(updateMode bool, page int) {
 	tmpfile, err := ioutil.TempFile("", ".xxxxxxx-download-comics")
 	utils.CheckError(err)
 	defer os.Remove(tmpfile.Name()) // clean up
-	utils.Wget("http://www.hellocomic.com/", tmpfile.Name())
+	utils.Wget("http://www.hellocomic.com/site/index?page="+strconv.Itoa(page), tmpfile.Name())
 
 	r, err := os.Open(tmpfile.Name())
 	utils.CheckError(err)
@@ -50,11 +50,19 @@ func GetUpdate(cfg map[string]string, updateMode bool) {
 				utils.DBupdate(config["comicDir"], comicname, episodeNumber)
 			} else if needupdate {
 				fmt.Println("Updating", comicname, episodeNumber)
-				cfg["url"] = val
-				HelloComics(cfg)
+				config["url"] = val
+				HelloComics(config)
 			}
 		}
 	})
+}
+
+// GetUpdate get all update of the comics
+func GetUpdate(cfg map[string]string, updateMode bool) {
+	config = cfg
+	for i := 1; i < updatepagetofetch+1; i++ {
+		GetUpdatePageNumber(updateMode, i)
+	}
 }
 
 func pack(comicname, episode string) {
