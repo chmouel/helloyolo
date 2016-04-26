@@ -29,7 +29,8 @@ func parse(nextLink string) (nextURL string) {
 	var comicName, fileName, episodeNumber string
 	var allImages []Pages
 
-	rComicName, _ := regexp.Compile("<h1 class=\"tbtitle dnone\"><a href=\"[^\"]*\" title=\"([^\"]*)\">.* :: ")
+	rComicName, err := regexp.Compile("<h1 class=\"tbtitle dnone\"><a href=\"[^\"]*\" title=\"([^\"]*)\">.* :: ")
+	utils.CheckError(err)
 
 	if _, err := os.Stat(nextLink); os.IsNotExist(err) {
 		fileName = getURL(nextLink)
@@ -52,6 +53,12 @@ func parse(nextLink string) (nextURL string) {
 			comicName = comicNameMatch[1]
 		}
 
+		if strings.HasPrefix(tmps, "var base_url =") {
+			tmps = strings.TrimPrefix(tmps, "var base_url = '")
+			tmps = strings.TrimSuffix(tmps, "';")
+			episodeNumber = getEpisode(tmps)
+		}
+
 		if strings.HasPrefix(tmps, "var pages = [{") {
 			tmps = strings.TrimPrefix(tmps, "var pages = ")
 			tmps = strings.TrimSuffix(tmps, ";")
@@ -67,11 +74,6 @@ func parse(nextLink string) (nextURL string) {
 			}
 		}
 
-		if strings.HasPrefix(tmps, "var base_url =") {
-			tmps = strings.TrimPrefix(tmps, "var base_url = '")
-			tmps = strings.TrimSuffix(tmps, "';")
-			episodeNumber = getEpisode(tmps)
-		}
 	}
 	if comicName == "" {
 		log.Fatal("I didn't get the comicName which is weird\nMake sure you have the page with the image something like http://fr.comics-reader.com/read/batman__new_52_fr/fr/1/0/")
@@ -103,7 +105,10 @@ func parse(nextLink string) (nextURL string) {
 	}
 	targetCBZ := fmt.Sprintf("%s/%s.cbz", targetDir, episodeNumber)
 	if _, err := os.Stat(targetCBZ); os.IsNotExist(err) {
-		utils.Zipit(dirImg, targetCBZ)
+		err := utils.Zipit(dirImg, targetCBZ)
+		if err != nil {
+			log.Fatal(err)
+		}
 		log.Printf("ZIP: %s ", targetCBZ)
 	}
 
@@ -129,10 +134,17 @@ func getURL(url string) string {
 	return tmpfile.Name()
 }
 
-func getEpisode(s string) string {
+func getEpisode(s string) (ret string) {
 	s = strings.TrimSuffix(s, "/")
 	sp := strings.Split(strings.TrimPrefix(s, frComicPrefixURL), "/")
-	return fmt.Sprintf("%s-%s", sp[0], sp[len(sp)-2])
+
+	// Pretty clumsy but I haven't find a way to this in a better way
+	if sp[2] != "0" && sp[3] == "0" {
+		ret = fmt.Sprintf("%s-%s", sp[0], sp[2])
+	} else {
+		ret = fmt.Sprintf("%s-%s", sp[0], sp[len(sp)-3])
+	}
+	return
 }
 
 // Loop over all the links until the is none
