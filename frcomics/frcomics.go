@@ -139,7 +139,7 @@ func parse(nextLink string) (nextURL string) {
 	numero, err := strconv.Atoi(match[2])
 	utils.CheckError(err)
 
-	utils.DBupdate(config["comicDir"], match[1], numero)
+	utils.DBupdate(config["comicDir"], match[1], numero, false)
 	return nextURL
 }
 

@@ -30,15 +30,20 @@ func createTable(comicsDir string) (db *sql.DB) {
 }
 
 // DBupdate Update DB
-func DBupdate(comicsDir, comicname string, latest int) {
+func DBupdate(comicsDir, comicname string, latest int, subscribe bool) {
 	// TODO(chmou): Make it using the global flags
 	db := createTable(comicsDir)
 	defer db.Close()
 
-	sql := fmt.Sprintf(`
-INSERT OR REPLACE INTO Comics(ComicName, LastEpisode, Subscribed)
-VALUES(?,?,(SELECT subscribed FROM Comics WHERE comicname='%s'))
-`, comicname)
+	var subscribesql string
+	if subscribe {
+		subscribesql = "1"
+	} else {
+		// Autodetect the previous subscribtion
+		subscribesql = fmt.Sprintf(`(SELECT subscribed FROM Comics WHERE comicname='%s')`, comicname)
+	}
+
+	sql := fmt.Sprintf(`INSERT OR REPLACE INTO Comics(ComicName, LastEpisode, Subscribed) VALUES(?,?,%s)`, subscribesql)
 	stmt, err := db.Prepare(sql)
 	CheckError(err)
 
