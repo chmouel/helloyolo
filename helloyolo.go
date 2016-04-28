@@ -24,7 +24,7 @@ func main() {
 	subscribe := flag.String("s", "", "Subscribe to a comic already in DB")
 	update := flag.Bool("u", false, "Check if needed update")
 	updatePrint := flag.Bool("up", false, "Check update but only print and update DB (cron notification mode)")
-	addcomic := flag.Bool("a", false, "Add a comic to the database to track: EPISODE_NAME EPISODE_NUMBER")
+	addcomic := flag.Bool("a", false, "Add or Update a comic in database (and subscribe): EPISODE_NAME EPISODE_NUMBER")
 
 	flag.Usage = func() {
 		fmt.Printf("Usage: helloyolo [options] hello-comics-url\n\n")
