@@ -24,6 +24,7 @@ func main() {
 	subscribe := flag.String("s", "", "Subscribe to a comic already in DB")
 	update := flag.Bool("u", false, "Check if needed update")
 	updatePrint := flag.Bool("up", false, "Check update but only print and update DB (cron notification mode)")
+	addcomic := flag.Bool("a", false, "Add a comic to the database to track: EPISODE_NAME EPISODE_NUMBER")
 
 	flag.Usage = func() {
 		fmt.Printf("Usage: helloyolo [options] hello-comics-url\n\n")
@@ -42,6 +43,21 @@ func main() {
 	if *subscribe != "" {
 		utils.DBSubscribe(*comicDir, *subscribe)
 		fmt.Println(*subscribe, "has been subscribed.")
+		os.Exit(0)
+	}
+
+	if *addcomic {
+		if len(flag.Args()) != 2 {
+			fmt.Println("You need to specify two arguments: EPISODE_NAME EPISODE_NUMBER")
+			os.Exit(1)
+		}
+		var episodeNumber int
+		var err error
+		if episodeNumber, err = strconv.Atoi(flag.Args()[1]); err != nil {
+			fmt.Printf("%s does not seem a number\n", flag.Args()[1])
+		}
+		utils.DBupdate(*comicDir, flag.Args()[0], episodeNumber, true)
+		fmt.Printf("%s episode %d has been subscribed/added to the database\n", flag.Args()[0], episodeNumber)
 		os.Exit(0)
 	}
 
