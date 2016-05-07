@@ -29,6 +29,9 @@ func Wget(url, dest string) {
 	wgetExec, err := exec.LookPath("wget")
 	CheckError(err)
 
-	_, err = exec.Command(wgetExec, "-c", "-O", dest, url).Output()
-	CheckError(err)
+	output, err := exec.Command(wgetExec, "-c", "-O", dest, url).Output()
+	if err != nil {
+		log.Printf("WGET Command Failed: %s -c -O %s %s", wgetExec, dest, url)
+		log.Fatal(string(output))
+	}
 }
