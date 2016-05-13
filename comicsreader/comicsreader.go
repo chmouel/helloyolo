@@ -1,4 +1,4 @@
-package frcomics
+package comicsreader
 
 import (
 	"bufio"
@@ -18,7 +18,7 @@ import (
 
 var config = make(map[string]string)
 
-const frComicPrefixURL string = "http://fr.comics-reader.com/read/"
+var comicPrefixURL string
 
 // Pages repr
 type Pages struct {
@@ -76,7 +76,7 @@ func parse(nextLink string) (nextURL string) {
 		if strings.HasPrefix(tmps, "var next_chapter = \"") {
 			tmps = strings.TrimPrefix(tmps, "var next_chapter = \"")
 			tmps = strings.TrimSuffix(tmps, "/\";")
-			if len(strings.Split(strings.TrimPrefix(tmps, frComicPrefixURL), "/")) > 1 {
+			if len(strings.Split(strings.TrimPrefix(tmps, comicPrefixURL), "/")) > 1 {
 				nextURL = tmps
 			}
 		}
@@ -153,7 +153,7 @@ func getURL(url string) string {
 
 func getEpisode(s string) (ret string) {
 	s = strings.TrimSuffix(s, "/")
-	sp := strings.Split(strings.TrimPrefix(s, frComicPrefixURL), "/")
+	sp := strings.Split(strings.TrimPrefix(s, comicPrefixURL), "/")
 
 	// Pretty clumsy but I haven't find a way to this in a better way
 	if sp[2] != "0" && sp[3] == "0" {
@@ -166,6 +166,11 @@ func getEpisode(s string) (ret string) {
 
 // Loop over all the links until the is none
 func Loop(cfg map[string]string) {
+	reg, err := regexp.Compile("^(http://(fr|us)\\.comics-reader\\.com/read/)")
+	utils.CheckError(err)
+	match := reg.FindStringSubmatch(cfg["url"])
+	comicPrefixURL = match[0]
+
 	config = cfg
 	nextLink := cfg["url"]
 	for {

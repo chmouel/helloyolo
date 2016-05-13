@@ -24,6 +24,8 @@ var config = make(map[string]string)
 func GetUpdatePageNumber(updateMode bool, page int) {
 	tmpfile, err := ioutil.TempFile("", ".xxxxxxx-download-comics")
 	utils.CheckError(err)
+	_ = "breakpoint"
+
 	defer os.Remove(tmpfile.Name()) // clean up
 	utils.Wget("http://www.hellocomic.com/site/index?page="+strconv.Itoa(page), tmpfile.Name())
 

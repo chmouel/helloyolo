@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/chmouel/helloyolo/frcomics"
+	"github.com/chmouel/helloyolo/comicsreader"
 	"github.com/chmouel/helloyolo/hellocomics"
 	"github.com/chmouel/helloyolo/utils"
 )
@@ -78,8 +78,8 @@ func main() {
 
 	url := flag.Args()[0]
 	cfg["url"] = url
-	if strings.HasPrefix(url, "http://fr.comics-reader.com/") {
-		frcomics.Loop(cfg)
+	if strings.HasPrefix(url, "http://us.comics-reader.com/") || strings.HasPrefix(url, "http://fr.comics-reader.com/") {
+		comicsreader.Loop(cfg)
 	} else if strings.HasPrefix(url, "http://www.hellocomic.com/") {
 		hellocomics.HelloComics(cfg)
 	}
