@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS Comics (
 	id integer PRIMARY KEY,
 	ComicName varchar(255) NOT NULL,
 	LastEpisode integer,
+	Subscribed bool,
     DateTime datetime default current_timestamp,
 	CONSTRAINT uc_comicID UNIQUE (ComicName))`
 
